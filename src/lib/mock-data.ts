@@ -10,6 +10,7 @@ import type {
 
 export const teamMembers: TeamMember[] = [
   {
+    id: 1,
     name: 'Lovish',
     role: 'Founder and partner',
     paragraph:
@@ -19,11 +20,11 @@ export const teamMembers: TeamMember[] = [
       { label: 'WORKS WITH', value: 'WEALTH MANAGERS, NBFCS' },
     ],
     primaryAlt: 'Portrait of Lovish',
-    secondaryAlt: 'Annual report cover',
-    secondaryAltHover: 'A pitch deck spread',
     primaryImageSrc: '/team/lovish.jpg',
+    rotation: -4,
   },
   {
+    id: 2,
     name: 'Tarash',
     role: 'Senior designer',
     paragraph:
@@ -33,11 +34,11 @@ export const teamMembers: TeamMember[] = [
       { label: 'WORKS WITH', value: 'FINANCIAL FIRMS, INDUSTRIAL BRANDS' },
     ],
     primaryAlt: 'Portrait of Tarash',
-    secondaryAlt: 'Wealth firm logo final',
-    secondaryAltHover: 'Brand colour palette',
     primaryImageSrc: '/team/tarash.jpg',
+    rotation: 3,
   },
   {
+    id: 3,
     name: 'Disha',
     role: 'Content and LinkedIn lead',
     paragraph:
@@ -47,11 +48,11 @@ export const teamMembers: TeamMember[] = [
       { label: 'WORKS WITH', value: 'NBFCS, CAPITAL ADVISORIES' },
     ],
     primaryAlt: 'Portrait of Disha',
-    secondaryAlt: 'LinkedIn post analytics',
-    secondaryAltHover: 'Founder voice document',
     primaryImageSrc: '/team/disha.jpg',
+    rotation: -6,
   },
   {
+    id: 4,
     name: 'Nitika',
     role: 'Strategy and operations',
     paragraph:
@@ -61,9 +62,8 @@ export const teamMembers: TeamMember[] = [
       { label: 'WORKS WITH', value: 'CAPITAL ADVISORIES, BROKING HOUSES' },
     ],
     primaryAlt: 'Portrait of Nitika',
-    secondaryAlt: 'Project plan visualisation',
-    secondaryAltHover: 'Client review notes',
     primaryImageSrc: '/team/nitika.jpg',
+    rotation: 5,
   },
 ];
 
