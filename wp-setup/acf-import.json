@@ -1,0 +1,406 @@
+[
+    {
+        "key": "group_lwg_work_folder",
+        "title": "Work folder fields",
+        "fields": [
+            {
+                "key": "field_lwg_wf_position",
+                "label": "Position",
+                "name": "position",
+                "type": "number",
+                "instructions": "Lower numbers appear first in the folder grid on the public site. Default 10.",
+                "required": 0,
+                "default_value": 10,
+                "min": 0,
+                "step": 1,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_wf_seed_description",
+                "label": "Seed description",
+                "name": "seed_description",
+                "type": "textarea",
+                "instructions": "Shown inside the folder when there are no work samples yet.",
+                "required": 0,
+                "rows": 3,
+                "show_in_rest": 1
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "post_type",
+                    "operator": "==",
+                    "value": "work_folder"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "hide_on_screen": "",
+        "active": true,
+        "description": "",
+        "show_in_rest": 1
+    },
+    {
+        "key": "group_lwg_work_sample",
+        "title": "Work sample fields",
+        "fields": [
+            {
+                "key": "field_lwg_ws_parent_folder",
+                "label": "Parent folder",
+                "name": "parent_folder",
+                "type": "post_object",
+                "instructions": "Which folder this sample belongs in.",
+                "required": 1,
+                "post_type": ["work_folder"],
+                "return_format": "id",
+                "ui": 1,
+                "allow_null": 0,
+                "multiple": 0,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_ws_image",
+                "label": "Image",
+                "name": "image",
+                "type": "image",
+                "instructions": "Upload the image for this sample.",
+                "required": 1,
+                "return_format": "array",
+                "preview_size": "medium",
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_ws_caption",
+                "label": "Caption",
+                "name": "caption",
+                "type": "textarea",
+                "instructions": "Max 200 characters. Short note about what the work was.",
+                "required": 0,
+                "maxlength": 200,
+                "rows": 3,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_ws_position",
+                "label": "Position within folder",
+                "name": "position",
+                "type": "number",
+                "instructions": "Lower numbers appear first inside the folder. Default 10.",
+                "required": 0,
+                "default_value": 10,
+                "min": 0,
+                "step": 1,
+                "show_in_rest": 1
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "post_type",
+                    "operator": "==",
+                    "value": "work_sample"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "active": true,
+        "show_in_rest": 1
+    },
+    {
+        "key": "group_lwg_role",
+        "title": "Role fields",
+        "fields": [
+            {
+                "key": "field_lwg_role_location",
+                "label": "Location",
+                "name": "location",
+                "type": "select",
+                "required": 1,
+                "choices": {
+                    "Abohar": "Abohar",
+                    "Remote": "Remote",
+                    "Hybrid": "Hybrid"
+                },
+                "default_value": "Abohar",
+                "return_format": "value",
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_role_type",
+                "label": "Type",
+                "name": "type",
+                "type": "select",
+                "required": 1,
+                "choices": {
+                    "Full time": "Full time",
+                    "Part time": "Part time",
+                    "Contract": "Contract"
+                },
+                "default_value": "Full time",
+                "return_format": "value",
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_role_posted_date",
+                "label": "Posted date",
+                "name": "posted_date",
+                "type": "date_picker",
+                "instructions": "When this role was first posted. Defaults to publish date if blank.",
+                "required": 0,
+                "display_format": "d/m/Y",
+                "return_format": "Y-m-d",
+                "first_day": 1,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_role_summary",
+                "label": "Summary",
+                "name": "summary",
+                "type": "textarea",
+                "instructions": "Max 400 characters. Shown on the corkboard memo on the public site.",
+                "required": 1,
+                "maxlength": 400,
+                "rows": 4,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_role_description",
+                "label": "Full description",
+                "name": "description",
+                "type": "wysiwyg",
+                "instructions": "Detailed description shown when a candidate clicks the memo to read more.",
+                "required": 1,
+                "tabs": "all",
+                "toolbar": "full",
+                "media_upload": 0,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_role_application_instructions",
+                "label": "Application instructions",
+                "name": "application_instructions",
+                "type": "textarea",
+                "instructions": "How candidates should apply.",
+                "default_value": "Send your CV to coffee@giraffe.partners or use the application form below.",
+                "required": 0,
+                "rows": 3,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_role_status",
+                "label": "Status",
+                "name": "status",
+                "type": "select",
+                "instructions": "Open roles show on the public site. Closed roles are hidden but kept in the database.",
+                "required": 1,
+                "choices": {
+                    "Open": "Open",
+                    "Closed": "Closed"
+                },
+                "default_value": "Open",
+                "return_format": "value",
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_role_rotation_angle",
+                "label": "Rotation angle",
+                "name": "rotation_angle",
+                "type": "number",
+                "instructions": "Auto-set on save. Range -2 to +2 degrees. Used by the corkboard to give each memo a slight tilt.",
+                "required": 0,
+                "default_value": 0,
+                "min": -2,
+                "max": 2,
+                "step": 0.1,
+                "show_in_rest": 1
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "post_type",
+                    "operator": "==",
+                    "value": "role"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "active": true,
+        "show_in_rest": 1
+    },
+    {
+        "key": "group_lwg_gallery_image",
+        "title": "Gallery image fields",
+        "fields": [
+            {
+                "key": "field_lwg_gi_image",
+                "label": "Image",
+                "name": "image",
+                "type": "image",
+                "instructions": "Upload the photograph.",
+                "required": 1,
+                "return_format": "array",
+                "preview_size": "medium",
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_gi_caption",
+                "label": "Caption",
+                "name": "caption",
+                "type": "text",
+                "instructions": "Short caption for the public site. Max 200 characters.",
+                "required": 0,
+                "maxlength": 200,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_gi_date_taken",
+                "label": "Date taken",
+                "name": "date_taken",
+                "type": "date_picker",
+                "instructions": "When the photo was taken. Defaults to upload date if blank.",
+                "required": 0,
+                "display_format": "d/m/Y",
+                "return_format": "Y-m-d",
+                "first_day": 1,
+                "show_in_rest": 1
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "post_type",
+                    "operator": "==",
+                    "value": "gallery_image"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "active": true,
+        "show_in_rest": 1
+    },
+    {
+        "key": "group_lwg_application",
+        "title": "Application fields",
+        "fields": [
+            {
+                "key": "field_lwg_app_applicant_name",
+                "label": "Applicant name",
+                "name": "applicant_name",
+                "type": "text",
+                "required": 1,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_app_applicant_email",
+                "label": "Applicant email",
+                "name": "applicant_email",
+                "type": "email",
+                "required": 1,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_app_applicant_phone",
+                "label": "Applicant phone (optional)",
+                "name": "applicant_phone",
+                "type": "text",
+                "required": 0,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_app_selected_role",
+                "label": "Selected role",
+                "name": "selected_role",
+                "type": "post_object",
+                "instructions": "The role the candidate applied for. Empty for a general note.",
+                "required": 0,
+                "post_type": ["role"],
+                "return_format": "id",
+                "ui": 1,
+                "allow_null": 1,
+                "multiple": 0,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_app_note",
+                "label": "Note from applicant",
+                "name": "note",
+                "type": "textarea",
+                "required": 0,
+                "rows": 4,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_app_cv_file",
+                "label": "CV file",
+                "name": "cv_file",
+                "type": "file",
+                "instructions": "Uploaded CV. PDF, DOC, or DOCX up to 10MB.",
+                "required": 1,
+                "return_format": "array",
+                "mime_types": "pdf,doc,docx",
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_app_submitted_at",
+                "label": "Submitted at",
+                "name": "submitted_at",
+                "type": "date_time_picker",
+                "required": 0,
+                "display_format": "d/m/Y g:i a",
+                "return_format": "Y-m-d H:i:s",
+                "first_day": 1,
+                "show_in_rest": 1
+            },
+            {
+                "key": "field_lwg_app_status",
+                "label": "Status",
+                "name": "status",
+                "type": "select",
+                "required": 0,
+                "choices": {
+                    "New": "New",
+                    "Reviewed": "Reviewed",
+                    "Replied": "Replied",
+                    "Archived": "Archived"
+                },
+                "default_value": "New",
+                "return_format": "value",
+                "show_in_rest": 1
+            }
+        ],
+        "location": [
+            [
+                {
+                    "param": "post_type",
+                    "operator": "==",
+                    "value": "application"
+                }
+            ]
+        ],
+        "menu_order": 0,
+        "position": "normal",
+        "style": "default",
+        "label_placement": "top",
+        "instruction_placement": "label",
+        "active": true,
+        "show_in_rest": 1
+    }
+]
