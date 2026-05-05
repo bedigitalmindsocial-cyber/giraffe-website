@@ -56,7 +56,19 @@ export type GalleryImage = {
   // Aspect ratio drives masonry height variation (and matches the real image when uploaded)
   ratio: '1:1' | '3:4' | '4:5' | '4:3' | '3:2' | '16:9' | '5:4';
 };
-
+export interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  primaryImageSrc?: string;
+  primaryAlt?: string;
+  rotation?: number;  // Add this line
+  paragraph?: string;
+  detailLines?: Array<{
+    label: string;
+    value: string;
+  }>;
+}
 export type TeamMember = {
   name: string;
   role: string;
