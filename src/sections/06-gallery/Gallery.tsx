@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import type { GalleryImage, GalleryTag } from '@/lib/types';
 import { GalleryLightbox } from './GalleryLightbox';
@@ -12,9 +12,14 @@ type GalleryProps = {
 const PAGE_SIZE = 12;
 
 export function Gallery({ images }: GalleryProps) {
+  const [mounted, setMounted] = useState(false);
   const [activeTag, setActiveTag] = useState<GalleryTag | 'All'>('All');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const allTags = useMemo<GalleryTag[]>(() => {
     const set = new Set<GalleryTag>();
@@ -29,6 +34,10 @@ export function Gallery({ images }: GalleryProps) {
 
   const shown = filtered.slice(0, visibleCount);
   const hasMore = filtered.length > visibleCount;
+
+  if (!mounted) {
+    return null;
+  }
 
   if (images.length === 0) {
     return (
