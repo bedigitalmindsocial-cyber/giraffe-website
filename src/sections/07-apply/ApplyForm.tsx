@@ -48,40 +48,52 @@ export function ApplyForm({ roles }: ApplyFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [nonce, setNonce] = useState<string>('');
+  const [nonceLoading, setNonceLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Fetch the WordPress nonce from our custom endpoint
+  // Fetch the WordPress nonce when component loads
   useEffect(() => {
     const fetchNonce = async () => {
+      setNonceLoading(true);
       try {
         const apiBase = process.env.NEXT_PUBLIC_WP_API_URL;
-        console.log('[ApplyForm] Fetching nonce from:', `${apiBase}/wp-json/lwg/v1/nonce`);
+        console.log('[ApplyForm] 🔍 Fetching nonce from:', `${apiBase}/wp-json/lwg/v1/nonce`);
         
-        // Fetch nonce from custom endpoint
         const res = await fetch(`${apiBase}/wp-json/lwg/v1/nonce`, {
           method: 'GET',
           credentials: 'include',
         });
         
-        console.log('[ApplyForm] Nonce fetch status:', res.status);
+        console.log('[ApplyForm] Response status:', res.status);
         
         if (res.ok) {
           const data = await res.json();
-          console.log('[ApplyForm] Nonce response:', data);
+          console.log('[ApplyForm] Nonce response received:', data);
           
           if (data.nonce) {
             setNonce(data.nonce);
-            console.log('[ApplyForm] ✅ Nonce set successfully:', data.nonce.substring(0, 10) + '...');
+            console.log('[ApplyForm] ✅ Nonce successfully set!');
+          } else {
+            console.warn('[ApplyForm] ⚠️ Response has no nonce property');
           }
         } else {
-          console.warn('[ApplyForm] Failed to fetch nonce, status:', res.status);
+          console.error('[ApplyForm] ❌ Failed to fetch nonce, status:', res.status);
+          const text = await res.text();
+          console.error('[ApplyForm] Response:', text);
         }
       } catch (err) {
-        console.error('[ApplyForm] Error fetching nonce:', err);
+        console.error('[ApplyForm] ❌ Error fetching nonce:', err);
+      } finally {
+        setNonceLoading(false);
       }
     };
 
+    // Fetch nonce immediately on mount
     fetchNonce();
+
+    // Also refetch nonce every 30 seconds to keep it fresh
+    const interval = setInterval(fetchNonce, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // Listen for "apply to this role" events
@@ -128,6 +140,16 @@ export function ApplyForm({ roles }: ApplyFormProps) {
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    
+    // Check if nonce is loaded
+    if (!nonce) {
+      console.error('[ApplyForm] ❌ Cannot submit: nonce is not loaded yet');
+      setErrors({ 
+        firstName: 'Security check in progress. Please wait a moment and try again.' 
+      });
+      return;
+    }
+
     const next = validate(values);
     setErrors(next);
     if (Object.keys(next).length > 0) return;
@@ -148,12 +170,13 @@ export function ApplyForm({ roles }: ApplyFormProps) {
       formData.set('note', values.note);
       if (values.cv) formData.set('cv', values.cv);
 
-      console.log('[ApplyForm] Submitting application...');
-      console.log('[ApplyForm] Nonce present?', !!nonce);
+      console.log('[ApplyForm] 📤 Submitting application with nonce');
+      console.log('[ApplyForm] Nonce:', nonce.substring(0, 20) + '...');
       console.log('[ApplyForm] Form data:', {
         name: fullName,
         email: values.email,
         role: values.role,
+        hasCv: !!values.cv,
       });
 
       const res = await fetch(`${apiBase}/wp-json/lwg/v1/applications`, {
@@ -161,14 +184,14 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         body: formData,
         credentials: 'include',
         headers: {
-          'X-WP-Nonce': nonce || '',
+          'X-WP-Nonce': nonce,
         },
       });
 
       const json = await res.json().catch(() => ({}));
 
-      console.log('[ApplyForm] Response status:', res.status);
-      console.log('[ApplyForm] Response:', json);
+      console.log('[ApplyForm] 📥 Response status:', res.status);
+      console.log('[ApplyForm] Response body:', json);
 
       if (!res.ok) {
         if (res.status === 422 && json.errors) {
@@ -184,19 +207,19 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         let message = json.error || json.message || `Submission failed (${res.status}). Please try again.`;
         
         if (res.status === 403) {
-          message = 'Access denied. Please refresh the page and try again.';
-          console.error('[ApplyForm] 403 Error - Authorization failed');
+          message = 'Access denied. The security token may have expired. Please refresh the page and try again.';
+          console.error('[ApplyForm] ❌ 403 Error - Nonce validation failed');
         }
         
-        console.error('[ApplyForm] Submission error:', message);
+        console.error('[ApplyForm] ❌ Submission error:', message);
         setErrors({ firstName: message });
         return;
       }
 
-      console.log('[ApplyForm] ✅ Application submitted successfully!');
+      console.log('[ApplyForm] ✅✅✅ Application submitted successfully!');
       setSubmitted(true);
     } catch (err) {
-      console.error('[ApplyForm] Network error:', err);
+      console.error('[ApplyForm] ❌ Network error:', err);
       setErrors({
         firstName:
           'Could not reach the server. Check your connection and try again.',
@@ -410,10 +433,12 @@ export function ApplyForm({ roles }: ApplyFormProps) {
       <div className="pt-4">
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || nonceLoading}
           className="group w-full md:w-auto md:min-w-[240px] inline-flex items-center justify-center gap-3 h-14 px-8 bg-paper text-ink font-sans font-medium text-[13px] uppercase tracking-[0.04em] rounded-full hover:bg-deep-purple hover:text-paper transition-all disabled:opacity-60"
         >
-          <span>{submitting ? 'Sending…' : 'Send application'}</span>
+          <span>
+            {nonceLoading ? 'Checking security…' : submitting ? 'Sending…' : 'Send application'}
+          </span>
           <span
             aria-hidden="true"
             className="transition-transform group-hover:translate-x-1"
