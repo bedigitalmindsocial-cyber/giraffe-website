@@ -1,4 +1,4 @@
-const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:3000';
+const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://wp-lwg.giraffe.partners';
 
 export interface TeamMember {
   id: number;
@@ -23,23 +23,40 @@ export async function getTeamMembers(): Promise<TeamMember[]> {
     });
 
     if (!response.ok) {
-      console.error('Failed to fetch team members:', response.statusText, response.status);
+      console.error('Failed to fetch team members. Status:', response.status, response.statusText);
       return [];
     }
 
     const data = await response.json();
     
-    console.log('Team members data received:', data);
+    console.log('Raw API Response:', JSON.stringify(data, null, 2));
+
+    if (!Array.isArray(data)) {
+      console.error('API response is not an array:', typeof data);
+      return [];
+    }
 
     // Map the response to TeamMember interface
-    return data.map((member: any) => ({
-      id: member.id,
-      name: member.name || '',
-      role: member.role || '',
-      primaryImageSrc: member.image?.url || member.image || '',
-      primaryAlt: member.image?.alt || member.name || '',
-      rotation: member.rotation || -4,
-    }));
+    const teamMembers = data.map((member: any) => {
+      // Handle image URL - fix the escaped forward slashes
+      let imageUrl = '';
+      if (member.image?.url) {
+        imageUrl = member.image.url.replace(/\\\//g, '/');
+      }
+
+      return {
+        id: member.id || 0,
+        name: member.name?.trim() || '',
+        role: member.role?.trim() || '',
+        primaryImageSrc: imageUrl,
+        primaryAlt: member.image?.alt || member.name || '',
+        rotation: parseInt(String(member.rotation || '-4')) || -4,
+      };
+    });
+
+    console.log('Mapped team members:', JSON.stringify(teamMembers, null, 2));
+    
+    return teamMembers;
   } catch (error) {
     console.error('Error fetching team members:', error);
     return [];
