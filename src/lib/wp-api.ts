@@ -19,11 +19,8 @@ import type {
  * WordPress REST client for the LWG content. Server components consume
  * these on the Next.js side; if WP is unreachable, each function falls
  * back to the mock data so the public site never breaks.
- *
- * The base URL points at the Local WP install. Override via env var
- * `WP_API_URL` once the site is deployed (subdomain).
  */
-const WP_BASE = process.env.WP_API_URL || 'http://life-with-giraffe.local';
+const WP_BASE = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost';
 
 type WPImage = {
   id: number;
