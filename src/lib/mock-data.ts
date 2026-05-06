@@ -2,70 +2,10 @@ import type {
   FaqItem,
   GalleryImage,
   Role,
-  TeamMember,
   WeekMoment,
   WorkFolder,
   WorkSample,
 } from './types';
-
-export const teamMembers: TeamMember[] = [
-  {
-    id: 1,
-    name: 'Lovish',
-    role: 'Founder and partner',
-    paragraph:
-      'Lovish leads client conversations and senior reviews. He sat through ten revisions on a single annual report last year before it shipped. The client has been with us since the first version of that report. So has the team that built it.',
-    detailLines: [
-      { label: 'EXPERIENCE', value: '8 YEARS IN BRAND CONSULTING' },
-      { label: 'WORKS WITH', value: 'WEALTH MANAGERS, NBFCS' },
-    ],
-    primaryAlt: 'Portrait of Lovish',
-    primaryImageSrc: '/team/lovish.jpg',
-    rotation: -4,
-  },
-  {
-    id: 2,
-    name: 'Tarash',
-    role: 'Senior designer',
-    paragraph:
-      "Tarash designed the brand identity for a wealth management firm in Mumbai. The first version of the logo was rejected by their compliance officer for using a colour that, in their reading, looked too close to a regulator's mark. He went back to it three times. The fourth version cleared on first review. It is the one running on their letterhead today.",
-    detailLines: [
-      { label: 'EXPERIENCE', value: '6 YEARS IN BRAND DESIGN' },
-      { label: 'WORKS WITH', value: 'FINANCIAL FIRMS, INDUSTRIAL BRANDS' },
-    ],
-    primaryAlt: 'Portrait of Tarash',
-    primaryImageSrc: '/team/tarash.jpg',
-    rotation: 3,
-  },
-  {
-    id: 3,
-    name: 'Disha',
-    role: 'Content and LinkedIn lead',
-    paragraph:
-      'Disha runs the LinkedIn voice for the founder of an NBFC in Delhi. He had not posted in two years before she took over. They wrote his first six posts together over Zoom. He now posts every Tuesday. His inbound has changed.',
-    detailLines: [
-      { label: 'EXPERIENCE', value: '4 YEARS IN CONTENT STRATEGY' },
-      { label: 'WORKS WITH', value: 'NBFCS, CAPITAL ADVISORIES' },
-    ],
-    primaryAlt: 'Portrait of Disha',
-    primaryImageSrc: '/team/disha.jpg',
-    rotation: -6,
-  },
-  {
-    id: 4,
-    name: 'Nitika',
-    role: 'Strategy and operations',
-    paragraph:
-      'Nitika ran the brief and review process for a brand engagement with a Dubai-based capital advisory. The work involved fourteen deliverables across three months. None of them shipped late. None of them shipped without a partner review. She is the reason the work went out clean.',
-    detailLines: [
-      { label: 'EXPERIENCE', value: '5 YEARS IN OPERATIONS' },
-      { label: 'WORKS WITH', value: 'CAPITAL ADVISORIES, BROKING HOUSES' },
-    ],
-    primaryAlt: 'Portrait of Nitika',
-    primaryImageSrc: '/team/nitika.jpg',
-    rotation: 5,
-  },
-];
 
 export const weekMoments: WeekMoment[] = [
   {
