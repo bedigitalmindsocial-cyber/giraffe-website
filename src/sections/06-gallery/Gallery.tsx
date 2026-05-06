@@ -3,7 +3,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import type { GalleryImage, GalleryTag } from '@/lib/types';
-import { GalleryLightbox } from './GalleryLightbox';
 import { GalleryLoadingSkeleton } from '@/components/GalleryLoadingSkeleton';
 
 type GalleryProps = {
@@ -16,7 +15,6 @@ export function Gallery({ images }: GalleryProps) {
   const [mounted, setMounted] = useState(false);
   const [activeTag, setActiveTag] = useState<GalleryTag | 'All'>('All');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -74,28 +72,23 @@ export function Gallery({ images }: GalleryProps) {
       </div>
 
       <ul className="columns-1 sm:columns-2 lg:columns-3 gap-6 [column-fill:_balance]">
-        {shown.map((img, i) => (
+        {shown.map((img) => (
           <li
             key={img.id}
             className="mb-6 break-inside-avoid"
           >
-            <button
-              type="button"
-              onClick={() => setLightboxIndex(i)}
-              className="block w-full text-left group focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-purple focus-visible:outline-offset-2 rounded-sm"
-              aria-label={`Open image: ${img.alt}`}
-            >
+            <div className="block w-full text-left">
               <ImagePlaceholder
                 alt={img.alt}
                 ratio={img.ratio}
                 tone={img.placeholderTone}
                 src={img.imageUrl}
-                className="transition-transform duration-300 ease-out-quart group-hover:scale-[1.02]"
+                className="transition-transform duration-300 ease-out-quart hover:scale-[1.02]"
               />
               <p className="font-sans italic text-mid-purple-1 text-[12px] mt-2">
                 {img.caption}
               </p>
-            </button>
+            </div>
           </li>
         ))}
       </ul>
@@ -117,20 +110,6 @@ export function Gallery({ images }: GalleryProps) {
           </button>
         </div>
       )}
-
-      <GalleryLightbox
-        images={shown}
-        index={lightboxIndex}
-        onClose={() => setLightboxIndex(null)}
-        onPrev={() =>
-          setLightboxIndex((i) =>
-            i === null ? null : (i - 1 + shown.length) % shown.length,
-          )
-        }
-        onNext={() =>
-          setLightboxIndex((i) => (i === null ? null : (i + 1) % shown.length))
-        }
-      />
     </>
   );
 }
