@@ -103,7 +103,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
 
     try {
       const apiBase =
-        process.env.NEXT_PUBLIC_WP_API_URL || 'http://life-with-giraffe.local';
+        process.env.NEXT_PUBLIC_WP_API_URL;
       const fullName =
         values.firstName.trim() +
         (values.lastName.trim() ? ' ' + values.lastName.trim() : '');
