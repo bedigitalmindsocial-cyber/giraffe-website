@@ -56,7 +56,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
     const fetchNonce = async () => {
       setNonceLoading(true);
       try {
-        const apiBase = process.env.NEXT_PUBLIC_WP_API_URL;
+        onst apiBase = 'https://lwg.giraffe.partners';
         console.log('[ApplyForm] 🔍 Fetching nonce from:', `${apiBase}/wp-json/lwg/v1/nonce`);
         
         const res = await fetch(`${apiBase}/wp-json/lwg/v1/nonce`, {
