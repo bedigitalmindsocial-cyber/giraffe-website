@@ -35,27 +35,6 @@ export function Gallery({ images }: GalleryProps) {
   const shown = filtered.slice(0, visibleCount);
   const hasMore = filtered.length > visibleCount;
 
-  if (!mounted) {
-  return (
-    <ul className="columns-1 sm:columns-2 lg:columns-3 gap-6 [column-fill:_balance]">
-      {images.map((img) => (
-        <li key={img.id} className="mb-6 break-inside-avoid">
-          <div className="block w-full">
-            <ImagePlaceholder
-              alt={img.alt}
-              ratio={img.ratio}
-              tone={img.placeholderTone}
-            />
-            <p className="font-sans italic text-mid-purple-1 text-[12px] mt-2">
-              {img.caption}
-            </p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
   if (images.length === 0) {
     return (
       <p className="font-sans text-body-sm text-mid-purple-1 italic text-center mt-12">
@@ -75,7 +54,7 @@ export function Gallery({ images }: GalleryProps) {
             setVisibleCount(PAGE_SIZE);
           }}
         />
-        {allTags.map((tag) => (
+        {mounted && allTags.map((tag) => (
           <TagChip
             key={tag}
             label={tag}
@@ -133,19 +112,21 @@ export function Gallery({ images }: GalleryProps) {
         </div>
       )}
 
-      <GalleryLightbox
-        images={shown}
-        index={lightboxIndex}
-        onClose={() => setLightboxIndex(null)}
-        onPrev={() =>
-          setLightboxIndex((i) =>
-            i === null ? null : (i - 1 + shown.length) % shown.length,
-          )
-        }
-        onNext={() =>
-          setLightboxIndex((i) => (i === null ? null : (i + 1) % shown.length))
-        }
-      />
+      {mounted && (
+        <GalleryLightbox
+          images={shown}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onPrev={() =>
+            setLightboxIndex((i) =>
+              i === null ? null : (i - 1 + shown.length) % shown.length,
+            )
+          }
+          onNext={() =>
+            setLightboxIndex((i) => (i === null ? null : (i + 1) % shown.length))
+          }
+        />
+      )}
     </>
   );
 }
