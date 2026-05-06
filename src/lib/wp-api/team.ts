@@ -9,63 +9,54 @@ export interface TeamMember {
   rotation: number;
 }
 
-type WPImage = {
-  id: number;
-  alt: string;
-  sizes: {
-    large?: { url: string };
-    full?: { url: string };
-  };
-};
-
-type WPTeamFields = {
-  name_of_person: string;
-  role_of_a_person: string;
-  team_member_image: WPImage | null;
-  image_rotation: number;
-};
-
-type WPPost<F = unknown> = {
-  id: number;
-  slug: string;
-  title: { rendered: string };
-  fields: F;
-};
-
-async function fetchPosts<F>(
-  endpoint: string,
-): Promise<WPPost<F>[]> {
-  const url = new URL(`${WORDPRESS_URL}/wp-json/wp/v2/${endpoint}`);
-  url.searchParams.set('per_page', '100');
-  
-  const res = await fetch(url.toString(), {
-    next: { revalidate: 30 },
-  });
-  
-  if (!res.ok) {
-    throw new Error(`WP fetch failed: ${endpoint} → ${res.status}`);
-  }
-  
-  return res.json();
-}
-
 export async function getTeamMembers(): Promise<TeamMember[]> {
   try {
-    const raw = await fetchPosts<WPTeamFields>('team_members');
+    const endpoint = `${WORDPRESS_URL}/wp-json/giraffe/v1/team-members`;
     
-    return raw.map<TeamMember>((p) => {
-      const img = p.fields.team_member_image;
-      const imageUrl = img?.sizes.large?.url ?? img?.sizes.full?.url ?? '';
-      
+    console.log('Fetching team members from:', endpoint);
+    
+    const response = await fetch(endpoint, { 
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch team members. Status:', response.status, response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+    
+    console.log('Raw API Response:', JSON.stringify(data, null, 2));
+
+    if (!Array.isArray(data)) {
+      console.error('API response is not an array:', typeof data);
+      return [];
+    }
+
+    // Map the response to TeamMember interface
+    const teamMembers = data.map((member: any) => {
+      // Handle image URL - fix the escaped forward slashes
+      let imageUrl = '';
+      if (member.image?.url) {
+        imageUrl = member.image.url.replace(/\\\//g, '/');
+      }
+
       return {
-        id: p.id,
-        name: p.fields.name_of_person || p.title.rendered,
-        role: p.fields.role_of_a_person || '',
+        id: member.id || 0,
+        name: member.name?.trim() || '',
+        role: member.role?.trim() || '',
         primaryImageSrc: imageUrl,
-        primaryAlt: img?.alt || p.fields.name_of_person || '',
-        rotation: p.fields.image_rotation || -4,
+        primaryAlt: member.image?.alt || member.name || '',
+        rotation: parseInt(String(member.rotation || '-4')) || -4,
       };
     });
+
+    console.log('Mapped team members:', JSON.stringify(teamMembers, null, 2));
+    
+    return teamMembers;
   } catch (error) {
     console.error('Error fetching team members:', error);
     return [];
