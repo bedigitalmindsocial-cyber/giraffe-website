@@ -47,34 +47,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [nonce, setNonce] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Fetch the WordPress nonce (security ticket) when component loads
-  useEffect(() => {
-    const fetchNonce = async () => {
-      try {
-        const apiBase = process.env.NEXT_PUBLIC_WP_API_URL;
-        // Request any WordPress endpoint to get the nonce from headers
-        const res = await fetch(`${apiBase}/wp-json/wp/v2/posts?_fields=`, {
-          method: 'GET',
-        });
-        
-        // Get the nonce from response headers
-        const nonceHeader = res.headers.get('X-WP-Nonce');
-        if (nonceHeader) {
-          setNonce(nonceHeader);
-          console.log('[ApplyForm] Nonce fetched successfully');
-        } else {
-          console.warn('[ApplyForm] No nonce in response headers');
-        }
-      } catch (err) {
-        console.warn('[ApplyForm] Could not fetch nonce:', err);
-      }
-    };
-
-    fetchNonce();
-  }, []);
 
   // Listen for "apply to this role" events from corkboard memos and the
   // empty-state CTA. The handler sets the role dropdown without scrolling
@@ -129,33 +102,25 @@ export function ApplyForm({ roles }: ApplyFormProps) {
     setSubmitting(true);
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_WP_API_URL;
+      const apiBase =
+        process.env.NEXT_PUBLIC_WP_API_URL;
       const fullName =
         values.firstName.trim() +
         (values.lastName.trim() ? ' ' + values.lastName.trim() : '');
-      
       const formData = new FormData();
+      formData.set('role', values.role);
       formData.set('name', fullName);
       formData.set('email', values.email);
       formData.set('phone', values.phone);
-      formData.set('role', values.role);
       formData.set('note', values.note);
       if (values.cv) formData.set('cv', values.cv);
-
-      console.log('[ApplyForm] Submitting with nonce:', nonce ? 'present' : 'missing');
 
       const res = await fetch(`${apiBase}/wp-json/lwg/v1/applications`, {
         method: 'POST',
         body: formData,
-        headers: {
-          'X-WP-Nonce': nonce,
-        },
       });
 
       const json = await res.json().catch(() => ({}));
-
-      console.log('[ApplyForm] Response status:', res.status);
-      console.log('[ApplyForm] Response:', json);
 
       if (!res.ok) {
         if (res.status === 422 && json.errors) {
@@ -170,14 +135,8 @@ export function ApplyForm({ roles }: ApplyFormProps) {
           setErrors(mapped);
           return;
         }
-
-        let message = json.error || json.message || `Submission failed (${res.status}). Please try again.`;
-        
-        if (res.status === 403) {
-          message = 'Access denied. Please refresh the page and try again.';
-        }
-        
-        console.error('[ApplyForm] Submission error:', message);
+        const message =
+          json.error || `Submission failed (${res.status}). Please try again.`;
         setErrors({ firstName: message });
         return;
       }
