@@ -55,21 +55,34 @@ export function ApplyForm({ roles }: ApplyFormProps) {
     const fetchNonce = async () => {
       try {
         const apiBase = process.env.NEXT_PUBLIC_WP_API_URL;
-        // Request any WordPress endpoint to get the nonce from headers
-        const res = await fetch(`${apiBase}/wp-json/wp/v2/posts?_fields=`, {
+        console.log('[ApplyForm] Fetching nonce from:', `${apiBase}/wp-json/wp/v2/posts`);
+        
+        // Request the posts endpoint - WordPress returns nonce in headers
+        const res = await fetch(`${apiBase}/wp-json/wp/v2/posts?per_page=1`, {
           method: 'GET',
+          credentials: 'include', // Include cookies
         });
+        
+        console.log('[ApplyForm] Nonce fetch response status:', res.status);
         
         // Get the nonce from response headers
         const nonceHeader = res.headers.get('X-WP-Nonce');
+        console.log('[ApplyForm] X-WP-Nonce header:', nonceHeader ? 'Found' : 'Not found');
+        
         if (nonceHeader) {
           setNonce(nonceHeader);
-          console.log('[ApplyForm] Nonce fetched successfully');
+          console.log('[ApplyForm] Nonce set successfully');
         } else {
-          console.warn('[ApplyForm] No nonce in response headers');
+          console.warn('[ApplyForm] No X-WP-Nonce header in response');
+          // Try alternative: check if nonce is in window object
+          const windowNonce = (window as any)._wpRestNonce;
+          if (windowNonce) {
+            console.log('[ApplyForm] Found nonce in window._wpRestNonce');
+            setNonce(windowNonce);
+          }
         }
       } catch (err) {
-        console.warn('[ApplyForm] Could not fetch nonce:', err);
+        console.error('[ApplyForm] Failed to fetch nonce:', err);
       }
     };
 
@@ -134,6 +147,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         values.firstName.trim() +
         (values.lastName.trim() ? ' ' + values.lastName.trim() : '');
       
+      // Create FormData for file upload
       const formData = new FormData();
       formData.set('name', fullName);
       formData.set('email', values.email);
@@ -142,26 +156,25 @@ export function ApplyForm({ roles }: ApplyFormProps) {
       formData.set('note', values.note);
       if (values.cv) formData.set('cv', values.cv);
 
-      console.log('[ApplyForm] Submitting with nonce:', nonce ? 'present' : 'missing');
+      console.log('[ApplyForm] Current nonce before submit:', nonce || 'EMPTY');
+      console.log('[ApplyForm] Submitting to:', `${apiBase}/wp-json/lwg/v1/applications`);
 
       const res = await fetch(`${apiBase}/wp-json/lwg/v1/applications`, {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies for WordPress auth
         headers: {
-          'X-WP-Nonce': nonce,
+          'X-WP-Nonce': nonce || '', // Send nonce even if empty to test
         },
       });
 
       const json = await res.json().catch(() => ({}));
 
       console.log('[ApplyForm] Response status:', res.status);
-      console.log('[ApplyForm] Response:', json);
+      console.log('[ApplyForm] Response body:', json);
 
       if (!res.ok) {
         if (res.status === 422 && json.errors) {
-          // Field-level validation errors from the server. Server returns
-          // a single `name` error; map it to firstName so it lands in a
-          // visible field.
           const mapped: Errors = { ...json.errors };
           if ('name' in json.errors) {
             mapped.firstName = json.errors.name;
@@ -174,7 +187,8 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         let message = json.error || json.message || `Submission failed (${res.status}). Please try again.`;
         
         if (res.status === 403) {
-          message = 'Access denied. Please refresh the page and try again.';
+          message = 'Access denied. This usually means the security token is missing or invalid. Please refresh the page and try again.';
+          console.error('[ApplyForm] 403 Error - Nonce was:', nonce || 'MISSING');
         }
         
         console.error('[ApplyForm] Submission error:', message);
@@ -182,6 +196,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         return;
       }
 
+      console.log('[ApplyForm] ✅ Success!');
       setSubmitted(true);
     } catch (err) {
       console.error('Application submission failed', err);
