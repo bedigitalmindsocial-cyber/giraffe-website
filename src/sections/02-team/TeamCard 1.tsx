@@ -45,7 +45,7 @@ export function TeamCard({ member, isHovered, isFirst = false }: TeamCardProps) 
         </div>
 
         {/* Desktop - Image positioned absolutely */}
-        {member.primaryImageSrc && shouldBeBlack && (
+        {member.primaryImageSrc && shouldBeBlack ? (
           <img
             src={member.primaryImageSrc}
             alt={member.primaryAlt}
@@ -53,7 +53,7 @@ export function TeamCard({ member, isHovered, isFirst = false }: TeamCardProps) 
               position: "absolute",
               right: "80px",
               top: "50%",
-              transform: `translateY(-50%) rotate(${member.rotation || -4}deg)`,
+              transform: `translateY(-50%) rotate(${member.rotation}deg)`,
               height: "480px",
               width: "auto",
               zIndex: 50,
@@ -61,7 +61,7 @@ export function TeamCard({ member, isHovered, isFirst = false }: TeamCardProps) 
             }}
             loading="lazy"
           />
-        )}
+        ) : null}
       </article>
 
       {/* Mobile Version - Full-width card with image below text */}
@@ -91,8 +91,8 @@ export function TeamCard({ member, isHovered, isFirst = false }: TeamCardProps) 
             </h3>
           </div>
 
-          {/* Image Section - Below text on mobile, full width with padding */}
-          {member.primaryImageSrc && (
+          {/* Image Section - Below text on mobile */}
+          {member.primaryImageSrc ? (
             <div className="w-screen -ml-4 px-4 mt-4 mb-4">
               <div className="relative w-full overflow-hidden rounded-sm">
                 <img
@@ -104,7 +104,7 @@ export function TeamCard({ member, isHovered, isFirst = false }: TeamCardProps) 
                 />
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </article>
     </>
