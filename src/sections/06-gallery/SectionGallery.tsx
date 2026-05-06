@@ -1,4 +1,3 @@
-import { Reveal } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
 import { fetchGalleryImages } from '@/lib/wp-api';
 import { Gallery } from './Gallery';
@@ -14,9 +13,7 @@ export async function SectionGallery() {
           heading="The work, the team, the days in between."
           body="Photographs from the working life of the firm. Project handoffs. The occasional team dinner. The Diwali week."
         />
-        <Reveal delay={1}>
-          <Gallery images={images} />
-        </Reveal>
+        <Gallery images={images} />
       </div>
     </section>
   );
