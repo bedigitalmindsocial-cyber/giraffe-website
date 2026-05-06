@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { SectionHeading } from '@/components/SectionHeading';
-import { getTeamMembers, TeamMember } from '@/lib/wp-api/team';
+import { getTeamMembers } from '@/lib/wp-api/team';
+import type { TeamMember } from '@/lib/types';
 import { TeamCard } from './TeamCard';
 
 export function SectionTeam() {
