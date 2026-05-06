@@ -36,8 +36,25 @@ export function Gallery({ images }: GalleryProps) {
   const hasMore = filtered.length > visibleCount;
 
   if (!mounted) {
-    return null;
-  }
+  return (
+    <ul className="columns-1 sm:columns-2 lg:columns-3 gap-6 [column-fill:_balance]">
+      {images.map((img) => (
+        <li key={img.id} className="mb-6 break-inside-avoid">
+          <div className="block w-full">
+            <ImagePlaceholder
+              alt={img.alt}
+              ratio={img.ratio}
+              tone={img.placeholderTone}
+            />
+            <p className="font-sans italic text-mid-purple-1 text-[12px] mt-2">
+              {img.caption}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
   if (images.length === 0) {
     return (
