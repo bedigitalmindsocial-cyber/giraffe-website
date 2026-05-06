@@ -20,7 +20,7 @@ const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_EXT = ['pdf', 'doc', 'docx'] as const;
 
 type FormState = {
-  role: string; // role slug, 'general', or '' for unset
+  role: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -50,48 +50,41 @@ export function ApplyForm({ roles }: ApplyFormProps) {
   const [nonce, setNonce] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Fetch the WordPress nonce (security ticket) when component loads
+  // Fetch the WordPress nonce from our custom endpoint
   useEffect(() => {
     const fetchNonce = async () => {
       try {
         const apiBase = process.env.NEXT_PUBLIC_WP_API_URL;
-        console.log('[ApplyForm] Fetching nonce from:', `${apiBase}/wp-json/wp/v2/posts`);
+        console.log('[ApplyForm] Fetching nonce from:', `${apiBase}/wp-json/lwg/v1/nonce`);
         
-        // Request the posts endpoint - WordPress returns nonce in headers
-        const res = await fetch(`${apiBase}/wp-json/wp/v2/posts?per_page=1`, {
+        // Fetch nonce from custom endpoint
+        const res = await fetch(`${apiBase}/wp-json/lwg/v1/nonce`, {
           method: 'GET',
-          credentials: 'include', // Include cookies
+          credentials: 'include',
         });
         
-        console.log('[ApplyForm] Nonce fetch response status:', res.status);
+        console.log('[ApplyForm] Nonce fetch status:', res.status);
         
-        // Get the nonce from response headers
-        const nonceHeader = res.headers.get('X-WP-Nonce');
-        console.log('[ApplyForm] X-WP-Nonce header:', nonceHeader ? 'Found' : 'Not found');
-        
-        if (nonceHeader) {
-          setNonce(nonceHeader);
-          console.log('[ApplyForm] Nonce set successfully');
-        } else {
-          console.warn('[ApplyForm] No X-WP-Nonce header in response');
-          // Try alternative: check if nonce is in window object
-          const windowNonce = (window as any)._wpRestNonce;
-          if (windowNonce) {
-            console.log('[ApplyForm] Found nonce in window._wpRestNonce');
-            setNonce(windowNonce);
+        if (res.ok) {
+          const data = await res.json();
+          console.log('[ApplyForm] Nonce response:', data);
+          
+          if (data.nonce) {
+            setNonce(data.nonce);
+            console.log('[ApplyForm] ✅ Nonce set successfully:', data.nonce.substring(0, 10) + '...');
           }
+        } else {
+          console.warn('[ApplyForm] Failed to fetch nonce, status:', res.status);
         }
       } catch (err) {
-        console.error('[ApplyForm] Failed to fetch nonce:', err);
+        console.error('[ApplyForm] Error fetching nonce:', err);
       }
     };
 
     fetchNonce();
   }, []);
 
-  // Listen for "apply to this role" events from corkboard memos and the
-  // empty-state CTA. The handler sets the role dropdown without scrolling
-  // (the dispatcher already does the scroll).
+  // Listen for "apply to this role" events
   useEffect(() => {
     const handler = (event: Event) => {
       const detail = (event as CustomEvent<ApplyEventDetail>).detail;
@@ -147,7 +140,6 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         values.firstName.trim() +
         (values.lastName.trim() ? ' ' + values.lastName.trim() : '');
       
-      // Create FormData for file upload
       const formData = new FormData();
       formData.set('name', fullName);
       formData.set('email', values.email);
@@ -156,22 +148,27 @@ export function ApplyForm({ roles }: ApplyFormProps) {
       formData.set('note', values.note);
       if (values.cv) formData.set('cv', values.cv);
 
-      console.log('[ApplyForm] Current nonce before submit:', nonce || 'EMPTY');
-      console.log('[ApplyForm] Submitting to:', `${apiBase}/wp-json/lwg/v1/applications`);
+      console.log('[ApplyForm] Submitting application...');
+      console.log('[ApplyForm] Nonce present?', !!nonce);
+      console.log('[ApplyForm] Form data:', {
+        name: fullName,
+        email: values.email,
+        role: values.role,
+      });
 
       const res = await fetch(`${apiBase}/wp-json/lwg/v1/applications`, {
         method: 'POST',
         body: formData,
-        credentials: 'include', // Include cookies for WordPress auth
+        credentials: 'include',
         headers: {
-          'X-WP-Nonce': nonce || '', // Send nonce even if empty to test
+          'X-WP-Nonce': nonce || '',
         },
       });
 
       const json = await res.json().catch(() => ({}));
 
       console.log('[ApplyForm] Response status:', res.status);
-      console.log('[ApplyForm] Response body:', json);
+      console.log('[ApplyForm] Response:', json);
 
       if (!res.ok) {
         if (res.status === 422 && json.errors) {
@@ -187,8 +184,8 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         let message = json.error || json.message || `Submission failed (${res.status}). Please try again.`;
         
         if (res.status === 403) {
-          message = 'Access denied. This usually means the security token is missing or invalid. Please refresh the page and try again.';
-          console.error('[ApplyForm] 403 Error - Nonce was:', nonce || 'MISSING');
+          message = 'Access denied. Please refresh the page and try again.';
+          console.error('[ApplyForm] 403 Error - Authorization failed');
         }
         
         console.error('[ApplyForm] Submission error:', message);
@@ -196,10 +193,10 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         return;
       }
 
-      console.log('[ApplyForm] ✅ Success!');
+      console.log('[ApplyForm] ✅ Application submitted successfully!');
       setSubmitted(true);
     } catch (err) {
-      console.error('Application submission failed', err);
+      console.error('[ApplyForm] Network error:', err);
       setErrors({
         firstName:
           'Could not reach the server. Check your connection and try again.',
@@ -230,7 +227,6 @@ export function ApplyForm({ roles }: ApplyFormProps) {
   };
 
   const handleSuccessClose = () => {
-    // Hide the modal AND reset the form so it's ready for another submission.
     setSubmitted(false);
     setValues(empty);
     setErrors({});
