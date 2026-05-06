@@ -1,4 +1,3 @@
-
 const WORDPRESS_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://wp-lwg.giraffe.partners';
  
 export interface TeamMember {
@@ -16,7 +15,7 @@ async function fetchTeamMembers(): Promise<TeamMember[]> {
     console.log('[getTeamMembers] URL:', `${WORDPRESS_URL}/wp-json/wp/v2/team_members`);
  
     const response = await fetch(
-      `${WORDPRESS_URL}/wp-json/wp/v2/team_members?per_page=100`,
+      `${WORDPRESS_URL}/wp-json/wp/v2/team_members?per_page=100&orderby=date&order=asc`,
       {
         method: 'GET',
         headers: {
@@ -82,6 +81,7 @@ async function fetchTeamMembers(): Promise<TeamMember[]> {
     });
  
     console.log('[getTeamMembers] Total members loaded:', members.length);
+    console.log('[getTeamMembers] Order:', members.map(m => m.name).join(' → '));
     return members;
   } catch (error) {
     console.error('[getTeamMembers] Error:', error);
