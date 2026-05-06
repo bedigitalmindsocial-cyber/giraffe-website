@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { SectionHeading } from '@/components/SectionHeading';
-import { getTeamMembers } from '@/lib/wp-api';
+import { getTeamMembers } from '@/lib/wp-api/team';
 import type { TeamMember } from '@/lib/types';
 import { TeamCard } from './TeamCard';
 
@@ -10,21 +10,21 @@ export function SectionTeam() {
   const ITEMS_PER_PAGE = 4;
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTeamMembers = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        console.log('[SectionTeam] Loading team members...');
         const members = await getTeamMembers();
+        console.log('[SectionTeam] Loaded members:', members);
         setTeamMembers(members);
+        setError(null);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load team members';
-        console.error('Error loading team members:', err);
-        setError(errorMessage);
+        console.error('[SectionTeam] Error loading team members:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load team members');
         setTeamMembers([]);
       } finally {
         setLoading(false);
@@ -58,19 +58,27 @@ export function SectionTeam() {
 
         {loading && (
           <div className="container-content px-4 md:px-6">
-            <p className="text-center">Loading team members...</p>
+            <p className="text-center text-mid-purple-1">Loading team members...</p>
           </div>
         )}
 
         {error && (
           <div className="container-content px-4 md:px-6">
-            <p className="text-center text-red-600">Error: {error}</p>
+            <p className="text-center text-red-600">
+              Error: {error}
+            </p>
+            <p className="text-center text-sm text-mid-purple-1 mt-2">
+              Check browser console (F12) for more details
+            </p>
           </div>
         )}
 
         {!loading && !error && teamMembers.length === 0 && (
           <div className="container-content px-4 md:px-6">
-            <p className="text-center">No team members found.</p>
+            <p className="text-center text-mid-purple-1">No team members found.</p>
+            <p className="text-center text-sm text-mid-purple-1 mt-2">
+              Make sure team members are published in WordPress and the API endpoint is accessible.
+            </p>
           </div>
         )}
 
