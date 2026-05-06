@@ -11,7 +11,6 @@ import type {
   RoleLocation,
   RoleStatus,
   RoleType,
-  TeamMember,
   WorkFolder,
   WorkSample,
 } from './types';
@@ -71,39 +70,6 @@ async function fetchPosts<F>(
     throw new Error(`WP fetch failed: ${endpoint} → ${res.status}`);
   }
   return res.json();
-}
-
-/* ─── TEAM ────────────────────────────────────────────────────────── */
-
-type WPTeamFields = {
-  name_of_person?: string;
-  role_of_a_person?: string;
-  team_member_image?: WPImage | null;
-  image_rotation?: number;
-};
-
-export async function getTeamMembers(): Promise<TeamMember[]> {
-  try {
-    const raw = await fetchPosts<WPTeamFields>('team_members');
-    
-    return raw.map<TeamMember>((p) => {
-      const img = p.fields.team_member_image;
-      const imageUrl = img?.sizes.large?.url ?? img?.sizes.full?.url ?? '';
-      
-      return {
-        id: p.id,
-        name: p.fields.name_of_person || p.title.rendered,
-        role: p.fields.role_of_a_person || '',
-        primaryImageSrc: imageUrl,
-        primaryAlt: img?.alt || p.fields.name_of_person || '',
-        rotation: p.fields.image_rotation ?? -4,
-      };
-    });
-  } catch (error) {
-    console.warn('[wp-api] getTeamMembers failed, using mock data', error);
-    // Return empty array if no mock data exists, or add mock team data here
-    return [];
-  }
 }
 
 /* ─── WORK ────────────────────────────────────────────────────────── */

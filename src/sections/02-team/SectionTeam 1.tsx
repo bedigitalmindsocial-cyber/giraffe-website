@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { SectionHeading } from '@/components/SectionHeading';
-import { getTeamMembers } from '@/lib/wp-api';
+import { getTeamMembers } from '@/lib/wp-api/team';
 import type { TeamMember } from '@/lib/types';
 import { TeamCard } from './TeamCard';
 
@@ -12,20 +12,14 @@ export function SectionTeam() {
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTeamMembers = async () => {
       try {
-        setLoading(true);
-        setError(null);
         const members = await getTeamMembers();
         setTeamMembers(members);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load team members';
-        console.error('Error loading team members:', err);
-        setError(errorMessage);
-        setTeamMembers([]);
+      } catch (error) {
+        console.error('Error loading team members:', error);
       } finally {
         setLoading(false);
       }
@@ -62,19 +56,13 @@ export function SectionTeam() {
           </div>
         )}
 
-        {error && (
-          <div className="container-content px-4 md:px-6">
-            <p className="text-center text-red-600">Error: {error}</p>
-          </div>
-        )}
-
-        {!loading && !error && teamMembers.length === 0 && (
+        {!loading && teamMembers.length === 0 && (
           <div className="container-content px-4 md:px-6">
             <p className="text-center">No team members found.</p>
           </div>
         )}
 
-        {!loading && !error && teamMembers.length > 0 && (
+        {!loading && teamMembers.length > 0 && (
           <>
             <div 
               className="relative w-full"
