@@ -23,6 +23,8 @@ import type {
  */
 const WP_BASE = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost';
 
+console.log('[wp-api] WP_BASE:', WP_BASE);
+
 type WPImage = {
   id: number;
   alt: string;
@@ -64,13 +66,25 @@ async function fetchPosts<F>(
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, String(v));
   }
+  
+  console.log('[wp-api] Fetching from:', url.toString());
+  
   const res = await fetch(url.toString(), {
     next: { revalidate: 30 },
   });
+  
+  console.log('[wp-api] Response status:', res.status);
+  
   if (!res.ok) {
-    throw new Error(`WP fetch failed: ${endpoint} → ${res.status}`);
+    const errorText = await res.text();
+    console.error('[wp-api] Error response:', errorText);
+    throw new Error(`WP fetch failed: ${endpoint} → ${res.status} → ${errorText}`);
   }
-  return res.json();
+  
+  const data = await res.json();
+  console.log('[wp-api] Response data:', data);
+  
+  return data;
 }
 
 /* ─── TEAM ────────────────────────────────────────────────────────── */
@@ -83,27 +97,46 @@ type WPTeamFields = {
 };
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
-  try {
-    const raw = await fetchPosts<WPTeamFields>('team_members');
-    
-    return raw.map<TeamMember>((p) => {
-      const img = p.fields.team_member_image;
-      const imageUrl = img?.sizes.large?.url ?? img?.sizes.full?.url ?? '';
+  console.log('[getTeamMembers] Starting fetch...');
+  
+  // Try multiple possible endpoints
+  const possibleEndpoints = [
+    'team_members',
+    'team-members',
+    'team',
+  ];
+  
+  for (const endpoint of possibleEndpoints) {
+    try {
+      console.log(`[getTeamMembers] Trying endpoint: ${endpoint}`);
+      const raw = await fetchPosts<WPTeamFields>(endpoint);
       
-      return {
-        id: p.id,
-        name: p.fields.name_of_person || p.title.rendered,
-        role: p.fields.role_of_a_person || '',
-        primaryImageSrc: imageUrl,
-        primaryAlt: img?.alt || p.fields.name_of_person || '',
-        rotation: p.fields.image_rotation ?? -4,
-      };
-    });
-  } catch (error) {
-    console.warn('[wp-api] getTeamMembers failed, using mock data', error);
-    // Return empty array if no mock data exists, or add mock team data here
-    return [];
+      console.log(`[getTeamMembers] Successfully fetched from ${endpoint}:`, raw);
+      
+      const members = raw.map<TeamMember>((p) => {
+        const img = p.fields.team_member_image;
+        const imageUrl = img?.sizes.large?.url ?? img?.sizes.full?.url ?? '';
+        
+        return {
+          id: p.id,
+          name: p.fields.name_of_person || p.title.rendered,
+          role: p.fields.role_of_a_person || '',
+          primaryImageSrc: imageUrl,
+          primaryAlt: img?.alt || p.fields.name_of_person || '',
+          rotation: p.fields.image_rotation ?? -4,
+        };
+      });
+      
+      console.log('[getTeamMembers] Mapped members:', members);
+      return members;
+    } catch (error) {
+      console.warn(`[getTeamMembers] Failed to fetch from ${endpoint}:`, error);
+      continue;
+    }
   }
+  
+  console.error('[getTeamMembers] All endpoints failed, returning empty array');
+  return [];
 }
 
 /* ─── WORK ────────────────────────────────────────────────────────── */
