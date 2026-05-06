@@ -84,7 +84,7 @@ type WPTeamFields = {
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
   try {
-    const raw = await fetchPosts<WPTeamFields>('team-members');
+    const raw = await fetchPosts<WPTeamFields>('team_members');
     
     return raw.map<TeamMember>((p) => {
       const img = p.fields.team_member_image;
