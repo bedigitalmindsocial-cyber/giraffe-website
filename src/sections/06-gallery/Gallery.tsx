@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import type { GalleryImage, GalleryTag } from '@/lib/types';
 import { GalleryLightbox } from './GalleryLightbox';
-import { GalleryLoadingSkeleton } from './GalleryLoadingSkeleton';
+import { GalleryLoadingSkeleton } from '@/components/GalleryLoadingSkeleton';
 
 type GalleryProps = {
   images: GalleryImage[];
