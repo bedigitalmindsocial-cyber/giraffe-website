@@ -47,29 +47,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [nonce, setNonce] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Fetch nonce on mount
-  useEffect(() => {
-    const fetchNonce = async () => {
-      try {
-        const apiBase = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://wp-lwg.giraffe.partners';
-        const res = await fetch(`${apiBase}/wp-json/lwg/v1/nonce`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.nonce) {
-            setNonce(data.nonce);
-            console.log('[ApplyForm] ✅ Nonce loaded');
-          }
-        }
-      } catch (err) {
-        console.error('[ApplyForm] Error fetching nonce:', err);
-      }
-    };
-    
-    fetchNonce();
-  }, []);
 
   // Listen for "apply to this role" events
   useEffect(() => {
@@ -135,32 +113,18 @@ export function ApplyForm({ roles }: ApplyFormProps) {
       formData.set('note', values.note);
       if (values.cv) formData.set('cv', values.cv);
 
+      console.log('[ApplyForm] Submitting...');
+
       const res = await fetch(`${apiBase}/wp-json/lwg/v1/applications`, {
         method: 'POST',
         body: formData,
-        headers: {
-          'X-WP-Nonce': nonce,
-        },
       });
 
       const json = await res.json().catch(() => ({}));
 
+      console.log('[ApplyForm] Response:', res.status, json);
+
       if (!res.ok) {
-        if (res.status === 429) {
-          // Rate limited
-          setErrors({ 
-            firstName: 'You can submit one application per hour. Please try again later.' 
-          });
-          return;
-        }
-
-        if (res.status === 403) {
-          setErrors({ 
-            firstName: 'Security check failed. Please refresh the page and try again.' 
-          });
-          return;
-        }
-
         if (res.status === 422 && json.errors) {
           const mapped: Errors = { ...json.errors };
           if ('name' in json.errors) {
@@ -176,7 +140,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         return;
       }
 
-      console.log('[ApplyForm] ✅ Application submitted successfully!');
+      console.log('[ApplyForm] ✅ Success!');
       setSubmitted(true);
     } catch (err) {
       console.error('[ApplyForm] Error:', err);
