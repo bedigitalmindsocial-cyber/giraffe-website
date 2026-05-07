@@ -61,7 +61,6 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         
         const res = await fetch(`${apiBase}/wp-json/lwg/v1/nonce`, {
           method: 'GET',
-          credentials: 'include',
         });
         
         console.log('[ApplyForm] Response status:', res.status);
@@ -181,7 +180,6 @@ export function ApplyForm({ roles }: ApplyFormProps) {
       const res = await fetch(`${apiBase}/wp-json/lwg/v1/applications`, {
         method: 'POST',
         body: formData,
-        credentials: 'include',
         headers: {
           'X-WP-Nonce': nonce,
         },
