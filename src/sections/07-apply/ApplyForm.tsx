@@ -56,7 +56,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
     const fetchNonce = async () => {
       setNonceLoading(true);
       try {
-        onst apiBase = 'https://lwg.giraffe.partners';
+        const apiBase = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://wp-lwg.giraffe.partners';
         console.log('[ApplyForm] 🔍 Fetching nonce from:', `${apiBase}/wp-json/lwg/v1/nonce`);
         
         const res = await fetch(`${apiBase}/wp-json/lwg/v1/nonce`, {
@@ -88,10 +88,9 @@ export function ApplyForm({ roles }: ApplyFormProps) {
       }
     };
 
-    // Fetch nonce immediately on mount
     fetchNonce();
 
-    // Also refetch nonce every 30 seconds to keep it fresh
+    // Refetch nonce every 30 seconds to keep it fresh
     const interval = setInterval(fetchNonce, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -157,7 +156,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
     setSubmitting(true);
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_WP_API_URL;
+      const apiBase = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'https://wp-lwg.giraffe.partners';
       const fullName =
         values.firstName.trim() +
         (values.lastName.trim() ? ' ' + values.lastName.trim() : '');
