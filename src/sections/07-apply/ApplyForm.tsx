@@ -50,20 +50,9 @@ const empty: FormState = {
   note: '',
 };
 
-// Helper function to convert file to base64
-const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove the data:application/... part, keep only base64
-      const base64 = result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
+// Helper function kept for reference but not used in current implementation
+// const fileToBase64 = (file: File): Promise<string> => { ... };
+
 
 export function ApplyForm({ roles }: ApplyFormProps) {
   const [values, setValues] = useState<FormState>(empty);
@@ -167,49 +156,23 @@ export function ApplyForm({ roles }: ApplyFormProps) {
         return;
       }
 
-      // Convert CV to base64 for email attachment
-      let cvBase64 = '';
-      let cvMimeType = 'application/octet-stream';
-
-      if (values.cv) {
-        // Determine MIME type based on file extension
-        const ext = values.cv.name.split('.').pop()?.toLowerCase();
-        if (ext === 'pdf') {
-          cvMimeType = 'application/pdf';
-        } else if (ext === 'doc') {
-          cvMimeType = 'application/msword';
-        } else if (ext === 'docx') {
-          cvMimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-        }
-
-        try {
-          cvBase64 = await fileToBase64(values.cv);
-        } catch (err) {
-          console.error('[ApplyForm] Error converting CV to base64:', err);
-          // Continue without attachment if conversion fails
-        }
-      }
-
       // Get role title instead of slug
       const roleTitle = getRoleTitle(values.role);
 
-      // Send email to hiring team via EmailJS with CV attachment
+      // Prepare email parameters for EmailJS
       const emailParams = {
         to_email: 'bedigitalmindsocial@gmail.com',
         applicant_name: fullName,
         applicant_email: values.email,
         applicant_phone: values.phone || 'Not provided',
-        applied_role: roleTitle, // Now sends full role title
+        applied_role: roleTitle,
         applicant_note: values.note || 'No additional note provided',
         cv_filename: values.cv?.name || 'Not attached',
         submission_date: new Date().toLocaleString(),
         application_id: json.id || 'N/A',
-        // CV Attachment (base64 encoded)
-        cv_attachment: cvBase64,
-        cv_filename_attachment: values.cv?.name || '',
-        cv_mime_type: cvMimeType,
       };
 
+      // Send email via EmailJS
       await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
