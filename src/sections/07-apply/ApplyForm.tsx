@@ -8,6 +8,7 @@ import {
   type DragEvent,
   type FormEvent,
 } from 'react';
+import emailjs from '@emailjs/browser';
 import { Modal } from '@/components/Modal';
 import type { Role } from '@/lib/types';
 import { APPLY_EVENT, type ApplyEventDetail } from '@/lib/applyEvent';
@@ -18,6 +19,14 @@ type ApplyFormProps = {
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_EXT = ['pdf', 'doc', 'docx'] as const;
+
+// EmailJS Configuration
+const EMAILJS_PUBLIC_KEY = 'QvErI6kVfV9O00qzf';
+const EMAILJS_SERVICE_ID = 'service_mqkursl';
+const EMAILJS_TEMPLATE_ID = 'template_63ackul';
+
+// Initialize EmailJS
+emailjs.init(EMAILJS_PUBLIC_KEY);
 
 type FormState = {
   role: string;
@@ -113,8 +122,7 @@ export function ApplyForm({ roles }: ApplyFormProps) {
       formData.set('note', values.note);
       if (values.cv) formData.set('cv', values.cv);
 
-      console.log('[ApplyForm] Submitting...');
-
+      // Submit to WordPress
       const res = await fetch(`${apiBase}/wp-json/lwg/v1/applications`, {
         method: 'POST',
         body: formData,
@@ -122,25 +130,41 @@ export function ApplyForm({ roles }: ApplyFormProps) {
 
       const json = await res.json().catch(() => ({}));
 
-      console.log('[ApplyForm] Response:', res.status, json);
-
       if (!res.ok) {
-        if (res.status === 422 && json.errors) {
-          const mapped: Errors = { ...json.errors };
-          if ('name' in json.errors) {
-            mapped.firstName = json.errors.name;
-            delete (mapped as Record<string, unknown>).name;
-          }
-          setErrors(mapped);
+        if (res.status === 429) {
+          setErrors({ 
+            firstName: 'You can submit one application per hour. Please try again later.' 
+          });
+          setSubmitting(false);
           return;
         }
 
         let message = json.error || json.message || `Failed (${res.status}). Please try again.`;
         setErrors({ firstName: message });
+        setSubmitting(false);
         return;
       }
 
-      console.log('[ApplyForm] ✅ Success!');
+      // Send email to hiring team via EmailJS
+      const emailParams = {
+        to_email: 'bedigitalmindsocial@gmail.com', // Change this to your hiring team email
+        applicant_name: fullName,
+        applicant_email: values.email,
+        applicant_phone: values.phone || 'Not provided',
+        applied_role: values.role === 'general' ? 'General Application' : values.role,
+        applicant_note: values.note || 'No additional note provided',
+        cv_filename: values.cv?.name || 'Not attached',
+        submission_date: new Date().toLocaleString(),
+        application_id: json.id || 'N/A',
+      };
+
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        emailParams
+      );
+
+      console.log('[ApplyForm] ✅ Application submitted and email sent!');
       setSubmitted(true);
     } catch (err) {
       console.error('[ApplyForm] Error:', err);
